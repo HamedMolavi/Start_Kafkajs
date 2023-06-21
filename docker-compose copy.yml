@@ -1,0 +1,63 @@
+version: '2'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+    restart: unless-stopped
+    
+
+  kafka1:
+    image: wurstmeister/kafka:2.13-2.8.1
+    container_name: cluster1
+    ports:
+      - "9092:9092"
+    environment:
+      # if you want to customize any Kafka parameters, simply add them as environment variables: KAFKA_XXX
+      DOCKER_API_VERSION: 1.22
+      KAFKA_BROKER_ID: 1 # static id
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # listeners ---------------------------------------------------------------------------------------------
+      # KAFKA_ADVERTISED_HOST_NAME: localhost
+      # PORT_COMMAND: "docker port $$(hostname) 9092/tcp | cut -d: -f2" # if port is not static. Then refer to it with _{PORT_COMMAND}
+      # Use Listeners# different security mechanisms, different ports for single broker, different ips to listen for one broker, ...
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: EXTERNAL://localhost:9092,INTERNAL://cluster1:8082
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_LISTENERS: EXTERNAL://localhost:9092,INTERNAL://cluster1:8082
+      # security  ---------------------------------------------------------------------------------------------
+      # KAFKA_ORG_APACHE_KAFKA_COMMON_SECURITY_PLAIN_PLAINLOGINMODULE: required
+      # KAFKA_USERNAME: "admin"
+      # KAFKA_PASSWORD: "password"
+      # KAFKA_USER_ADMIN: "secret"
+      # KAFKA_SECURITY_INTER_BROKER_PROTOCOL: SASL_SSL
+      # KAFKA_sasl_mechanism_inter_broker_protocol: PLAIN
+      # KAFKA_sasl_enabled_mechanisms: PLAIN
+      # KAFKA_CREATE_TOPICS: "Topic1:partitios:replicas:cleanup.policy"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    
+  kafka2:
+    image: wurstmeister/kafka:2.13-2.8.1
+    container_name: cluster2
+    ports:
+      - "9093:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      # DOCKER_API_VERSION: 1.22
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: EXTERNAL://localhost:9092,INTERNAL://cluster2:8082
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_LISTENERS: EXTERNAL://localhost:9092,INTERNAL://cluster2:8082
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped

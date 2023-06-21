@@ -1,0 +1,21 @@
+{
+  "dependencies": {
+    "@kafkajs/confluent-schema-registry": "^3.3.0",
+    "dotenv": "^16.0.3",
+    "ip": "^1.1.8",
+    "kafkajs": "^2.2.4"
+  },
+  "name": "kafkajs",
+  "version": "1.0.0",
+  "main": "app.js",
+  "directories": {
+    "test": "tests"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
